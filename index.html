@@ -155,6 +155,8 @@ const RAW=`#Авторские
 const D=[];let C='';
 RAW.split('\n').forEach(l=>{if(l[0]=='#'){C=l.slice(1);return}const p=l.split('|');D.push({c:C,n:p[0],g:p[1],m:p[2],z:p[3],i:p[4].split(';').map(s=>{const m=s.match(/^(.*\S)\s+(\d+(?:\s\S+)?)$/);return{n:m[1],a:m[2]}})})});
 const fmt=a=>/^\d+$/.test(a)?a+' мл':a;
+const V=[90,160,200,120,90, 200,200,200,200,200, 100,130,155, 90,120,180,150, 150,110,190, 180,100,200,80,200, 160,160,180,180,220,180,180, 75,100,170,110, 260,260,150,180,180,180, 160,160,160,160,160,160,160, 700,700,700,700,700,700,700, 700,700,700,1000, 600,600,600,600,150, 40,60,200,200,200,200,200,200,250,1350];let vk=0;
+D.forEach(d=>{d.v=d.c.startsWith('П/ф')?d.i.reduce((s,x)=>s+(/^\d+$/.test(x.a)?+x.a:0),0):V[vk++]});
 const sh=a=>a.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
 const rnd=a=>a[Math.random()*a.length|0];
 function ld(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
@@ -169,10 +171,10 @@ $('tabs').onclick=e=>{if(e.target.dataset.m){mode=e.target.dataset.m;reset()}};
 const pool=()=>D.filter(d=>cat=='Все'||d.c==cat);
 function mark(n,bad){weak=weak.filter(x=>x!=n);if(bad)weak.push(n);sv('bk_weak',weak)}
 function reset(){deck=sh(pool().filter(d=>!onlyWeak||weak.includes(d.n)));di=0;flip=false;q=null;render()}
-function recipe(d){return`<table>${d.i.map(x=>`<tr><td>${x.n}</td><td>${fmt(x.a)}</td></tr>`).join('')}</table><div class="mu">${[['Бокал и лёд',d.g],['Метод',d.m],['Украшение',d.z]].filter(x=>x[1]!='—').map(x=>x[0]+': <b>'+x[1]+'</b>').join('<br>')}</div>`}
-function mk(){const P=pool(),d=rnd(P),t=rnd(['a','r',...['g','m','z'].filter(k=>d[k]&&d[k]!='—')]),u=f=>[...new Set(D.map(f))];let t1,ans,op;
+function recipe(d){return`<table>${d.i.map(x=>`<tr><td>${x.n}</td><td>${fmt(x.a)}</td></tr>`).join('')}<tr><td><b>Выход</b></td><td><b>${d.v} мл</b></td></tr></table><div class="mu">${[['Бокал и лёд',d.g],['Метод',d.m],['Украшение',d.z]].filter(x=>x[1]!='—').map(x=>x[0]+': <b>'+x[1]+'</b>').join('<br>')}</div>`}
+function mk(){const P=pool(),d=rnd(P),t=rnd(['a','r','v',...['g','m','z'].filter(k=>d[k]&&d[k]!='—')]),u=f=>[...new Set(D.map(f))];let t1,ans,op;
 if(t=='r'){t1='Какой это коктейль?<br><span class="mu">'+d.i.map(x=>x.n+' '+fmt(x.a)).join(' · ')+'</span>';ans=d.n;op=sh(D.filter(x=>x!=d)).slice(0,3).map(x=>x.n)}
-else if(t=='a'){const x=rnd(d.i),pl=/^\d+$/.test(x.a);t1=`«${d.n}»: сколько «${x.n}»?`;ans=fmt(x.a);op=sh(u(()=>0).length?[...new Set(D.flatMap(y=>y.i.map(z=>z.a)).filter(a=>/^\d+$/.test(a)==pl&&a!=x.a))]:[]).slice(0,3).map(fmt)}
+else if(t=='v'){t1=`«${d.n}»: какой выход?`;ans=d.v+' мл';op=sh(u(y=>y.v).filter(v=>v!=d.v)).slice(0,3).map(v=>v+' мл')}else if(t=='a'){const x=rnd(d.i),pl=/^\d+$/.test(x.a);t1=`«${d.n}»: сколько «${x.n}»?`;ans=fmt(x.a);op=sh(u(()=>0).length?[...new Set(D.flatMap(y=>y.i.map(z=>z.a)).filter(a=>/^\d+$/.test(a)==pl&&a!=x.a))]:[]).slice(0,3).map(fmt)}
 else{const L={g:'бокал и лёд',m:'метод',z:'украшение'};t1=`«${d.n}»: ${L[t]}?`;ans=d[t];op=sh(u(y=>y[t]).filter(v=>v!=ans&&v!='—')).slice(0,3)}
 return{d,t1,ans,op:sh([ans,...op]),p:null}}
 function pick(i){if(q.p!==null)return;q.p=i;const ok=q.op[i]==q.ans;st.all++;if(ok)st.ok++;sv('bk_st',st);mark(q.d.n,!ok&&true);if(ok&&false)0;render()}
